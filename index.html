@@ -4,12 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    
     <title>Daily Test</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="navbar">
+        <div class="top-bar">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="နာမည်ရှာရန် (မြန်မာ/အင်္ဂလိပ်)" oninput="searchCustomers()">
+            </div>
+            <div class="customer-count">
+                စုစုပေါင်းဝယ်ယူသူ: <span id="totalCustomers">0</span> ယောက်
+            </div>
+        </div>
         <ul>
             <li><a href="#" onclick="showPage('form-page')">စာရင်းသွင်းရန်</a></li>
             <li><a href="#" onclick="showPage('overdue-page')">နောက်ကျသူများ</a></li>
@@ -75,11 +82,12 @@
         <!-- Overdue Page -->
         <div id="overdue-page" class="hidden">
             <h2>နောက်ကျနေသော စာရင်းများ</h2>
-            <table id="overdue-table">
+            <table id="overdue-table" class="glass-card">
                 <thead>
                     <tr>
                         <th>အမည်</th>
                         <th>ဖုန်းနံပါတ်</th>
+                        <th>ရေဗူးအရေအတွက်</th>
                         <th>ပြန်ပေးရမည့်နေ့ရက်</th>
                         <th>နောက်ကျရက်</th>
                     </tr>
@@ -87,7 +95,6 @@
                 <tbody></tbody>
             </table>
         </div>
-
         <!-- Monthly Report Page -->
         <div id="monthly-report" class="hidden">
             <h2>လစဉ်အစီရင်ခံစာ</h2>
@@ -99,142 +106,6 @@
         </div>
     </div>
 
-    <script>
-        let customers = [];
-        const form = document.getElementById('customer-form');
-        let editingIndex = -1;
-
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('customers', JSON.stringify(customers));
-        }
-
-        // Load data from localStorage
-        function loadData() {
-            const saved = localStorage.getItem('customers');
-            if (saved) {
-                customers = JSON.parse(saved);
-                updateTables();
-            }
-        }
-
-        function showPage(pageId) {
-            document.getElementById('form-page').classList.add('hidden');
-            document.getElementById('overdue-page').classList.add('hidden');
-            document.getElementById('monthly-report').classList.add('hidden');
-            document.getElementById(pageId).classList.remove('hidden');
-            updateTables();
-        }
-
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleString('my-MM');
-        }
-
-        function updateTables() {
-            // Update main table
-            const tableBody = document.querySelector('#customers-table tbody');
-            tableBody.innerHTML = '';
-            
-            customers.forEach((customer, index) => {
-                const row = tableBody.insertRow();
-                row.innerHTML = `
-                    <td>${customer.name}</td>
-                    <td>${customer.address}</td>
-                    <td>${customer.phone}</td>
-                    <td>${formatDate(customer.pickupDate)}</td>
-                    <td>${formatDate(customer.returnDate)}</td>
-                    <td>${customer.quantity}</td>
-                    <td>${customer.totalAmount}</td>
-                    <td class="action">
-                        <button class="edit-btn" onclick="editCustomer(${index})">ပြင်ဆင်ရန်</button>
-                        <button class="delete-btn" onclick="deleteCustomer(${index})">ဖျက်ရန်</button>
-                    </td>
-                `;
-            });
-
-            // Update overdue table
-            const overdueBody = document.querySelector('#overdue-table tbody');
-            overdueBody.innerHTML = '';
-            
-            const now = new Date();
-            customers.forEach(customer => {
-                const returnDate = new Date(customer.returnDate);
-                if (returnDate < now) {
-                    const days = Math.floor((now - returnDate) / (1000 * 60 * 60 * 24));
-                    const row = overdueBody.insertRow();
-                    row.innerHTML = `
-                        <td>${customer.name}</td>
-                        <td>${customer.phone}</td>
-                        <td>${formatDate(customer.returnDate)}</td>
-                        <td>${days} ရက်</td>
-                    `;
-                }
-            });
-
-            // Update monthly report
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            
-            const monthlyData = customers.filter(customer => {
-                const customerDate = new Date(customer.pickupDate);
-                return customerDate.getMonth() === currentMonth && 
-                       customerDate.getFullYear() === currentYear;
-            });
-
-            const totalQuantity = monthlyData.reduce((sum, customer) => sum + Number(customer.quantity), 0);
-            const totalAmount = monthlyData.reduce((sum, customer) => sum + Number(customer.totalAmount), 0);
-
-            document.getElementById('total-monthly-quantity').textContent = totalQuantity;
-            document.getElementById('total-monthly-amount').textContent = totalAmount.toLocaleString();
-        }
-
-        function editCustomer(index) {
-            const customer = customers[index];
-            document.getElementById('name').value = customer.name;
-            document.getElementById('address').value = customer.address;
-            document.getElementById('phone').value = customer.phone;
-            document.getElementById('pickup-date').value = customer.pickupDate;
-            document.getElementById('return-date').value = customer.returnDate;
-            document.getElementById('quantity').value = customer.quantity;
-            document.getElementById('total-amount').value = customer.totalAmount;
-            editingIndex = index;
-        }
-
-        function deleteCustomer(index) {
-            if (confirm('ဤစာရင်းကို ဖျက်မှာသေချာပါသလား?')) {
-                customers.splice(index, 1);
-                saveData();
-                updateTables();
-            }
-        }
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const customerData = {
-                name: document.getElementById('name').value,
-                address: document.getElementById('address').value,
-                phone: document.getElementById('phone').value,
-                pickupDate: document.getElementById('pickup-date').value,
-                returnDate: document.getElementById('return-date').value,
-                quantity: document.getElementById('quantity').value,
-                totalAmount: document.getElementById('total-amount').value
-            };
-
-            if (editingIndex === -1) {
-                customers.push(customerData);
-            } else {
-                customers[editingIndex] = customerData;
-                editingIndex = -1;
-            }
-
-            saveData();
-            updateTables();
-            form.reset();
-        });
-
-        // Load initial data
-        loadData();
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
