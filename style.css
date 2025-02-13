@@ -156,6 +156,7 @@ th {
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
+        
     }
 
     .navbar a {
@@ -252,7 +253,7 @@ th {
             justify-content: space-between;
             align-items: center;
             padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(42, 65, 179, 0.05);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             margin-bottom: 1rem;
@@ -270,18 +271,18 @@ th {
             border: none;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.2);
-            color: white;
+            color: black;
         }
 
         .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(69, 25, 25, 0.7);
         }
 
         .customer-count {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(63, 32, 202, 0.2);
             padding: 0.5rem 1rem;
             border-radius: 20px;
-            color: white;
+            color:black;
             font-size: 0.9rem;
         }
 
